@@ -130,8 +130,12 @@ for i = 1:numel(files)
             n=n+1;
         end
     end
-    xlswrite(worksheetName,ccmatrix,'¤u§@ªí1');
-    xlswrite(worksheetName,hist,'¤u§@ªí2');
+    
+    % save the matrix into the excel file
+    xlswrite(worksheetName,ccmatrix,'correlationMatrix');
+    xlswrite(worksheetName,hist,'HistogramMeltpool');
+    
+    
     %% The statictical analysis ______%%%%%%%%%
     % K is the number of cluster
     for cluster = 1:K
