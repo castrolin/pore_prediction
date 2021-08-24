@@ -121,13 +121,7 @@ for i = 1:numel(files)
        end
        hist(1,k) = n;
    end
-%    
-%    for k =1:7
-%        if indexone(k,3)~=0
-%            figure(10+k),imshow(uint8(Data.shape(indexone(k,3)).Shape))
-%        end
-%    end
-%   [lenavg,lenstd,widavg,widstd,ratioavg,ratiostd] = analysisResult(Data,indexone,4000);
+
     ccmatrix=zeros(K*numel(files),5); % 4 is number of feature
     n=1;
     for ii = 1:numel(files)
@@ -136,8 +130,8 @@ for i = 1:numel(files)
             n=n+1;
         end
     end
-    xlswrite(worksheetName,ccmatrix,'工作表1');
-    xlswrite(worksheetName,hist,'工作表2');
+    xlswrite(worksheetName,ccmatrix,'瞻u禮@穠穩1');
+    xlswrite(worksheetName,hist,'瞻u禮@穠穩2');
     %% The statictical analysis ______%%%%%%%%%
     % K is the number of cluster
     for cluster = 1:K
@@ -163,7 +157,7 @@ for i = 1:numel(files)
             end
         end
     end
-    %% Cluster analysis(Find the abnormal and matrix)//Number of melt pool and correlatin matrix
+%% Cluster analysis(Find the abnormal and matrix)//Number of melt pool and correlatin matrix
 % Using "Data" structure extract the data in order to analysis
 for i = 1:K % cluster its statistical analysis
     Dimension(i,1)=mean(Length(i,:));
@@ -211,21 +205,22 @@ end
     end
     
     % criteria of std deviaion
-    B = sort(Dimension(:,8)); % standard of ratio
+    B = sort(Dimension(:,8)); % standard of ratio, 
     for num = 1: size(Dimension,1)
-        if Dimension(num,6) == B(1)
-            std_num = num; %% This is good melt pool
+        if Dimension(num,6) == B(1) 
+            std_num = num; %% This is good melt pool (find the cluster which has most of melt pool)
         end
     end
     % spatte angle chosen(criteria)
     Spatter_index = [];
     n =1;
     for L = 1: size(Data.DataBase,2)
-        if (Data.DataBase(L).Angle <30) %(30< 30~60 >60 
+        if (Data.DataBase(L).Angle <20) % the spatter angle 
             Spatter_index(n) = L; %% these image contain big spatter angel -> bad melt pool
             n = n+1;
         end
     end
+    % Abnormal melt pool cluster
     abnormal_meltpool = [];
     n =1;
     if ~isempty(corr_index) && ~isempty(Spatter_index)
@@ -306,7 +301,7 @@ for i = 1: size(position,3)
     end
     n = n + ii;
 end
-
+%% Dara cleaning
 dim_3D(dim_3D(:,2)== 0,:) = [];
 dim_3D(dim_3D(:,1)== 0,:) = [];
 % dim_3D(dim_3D(:,4) > 0.79,:) = [];
