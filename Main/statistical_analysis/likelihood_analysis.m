@@ -1,4 +1,14 @@
 %% Analysis the cluster data based on likelihood 
+% Length Width Ratio spatter distribution 
+% Data was extracted from excel file the  title is Test_(name of the layer).xlsx
+% The memory issu has to be noticed
+
+% Note:
+% data{1,1} = centroid of cluster info
+% data{1,2} = Number of each cluster
+% data{1,3} = mean and std for [Length, width, Ratio, Angle, Number of cluster]
+% data{1,4} = index of melt pool in each cluster
+
 clc,clear
 close all
 %% read excel and post-processing for cluster data
@@ -7,11 +17,7 @@ path = 'X:\Castro\statistical_analysis\ecel_0715\Test100.xlsx';
 for k = 1:numel(sheet_name)
     data_sheet{k} = xlsread(path,sheet_name{k});
 end
-% Note:
-% data{1,1} = centroid of cluster info
-% data{1,2} = Number of each cluster
-% data{1,3} = mean and std for [Length, width, Ratio, Angle, Number of cluster]
-% data{1,4} = index of melt pool in each cluster
+%---------------------------------------------------------------------------
 %% data_cleaning
 n = 0;
 for i = 1:size(data_sheet{1,2},2)
@@ -30,6 +36,7 @@ Angle_mean = [data_sheet{1,1}(:,4)];
 NOD = data_sheet{1,2};
 ns = sum(NOD);
 numbins = 10;
+%-------------------------------------------------------------------
 % Length
 figure
 for number = 1: size(NOD,2)
@@ -48,6 +55,7 @@ end
 xlabel('Length(\mum)')
 ylabel('PDF')
 set(gca,'FontSize',20)
+%-------------------------------------------------------------
 % Width
 figure
 for number = 1: size(NOD,2)
@@ -67,6 +75,7 @@ xlabel('Width(\mum)')
 ylabel('PDF')
 set(gca,'FontSize',20)
 
+%---------------------------------------------------------------
 % Ratio
 figure
 for number = 1: size(NOD,2)
@@ -86,6 +95,7 @@ xlabel('Ratio(W/L)')
 ylabel('PDF')
 set(gca,'FontSize',20)
 
+%------------------------------------------------------------------
 % Angle 
 % the number of spatter in each cluster
 NOS = data_sheet{1,3}(:,5);
