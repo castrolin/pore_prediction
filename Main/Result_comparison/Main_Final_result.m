@@ -16,7 +16,6 @@
 clc,clear
 close all
 %% read the file
-% x = xlsread('Pore.xlsx');
 x = xlsread('X:\Castro\recon_pore\excel\Pore_fist_July15.xlsx');
 %% Parameter setup
 Voxel_size = 18.604;
@@ -95,14 +94,7 @@ Relative_matrix = ((VolumeObject - sum(Data_matrix(:,6)))/VolumeObject)*100;
 %% confusion result and model accuracy
 
 %load the prdiction model result
-
-% load('prediction_result.mat');
-% load('pre_spatter_zero.mat');
-% load('pre_spatter_0to30.mat');
-% load('pre_spatter_30to60.mat');
-% load('pre_spatter_60to90.mat');
-% load('thesis_20deg.mat');  % < - dim_3D is mat file
-load('X:\Castro\recon_pore\matfile\July15result.mat');
+load('X:\Castro\recon_pore\matfile\July15result.mat'); % < - dim_3D is mat file
 
 %% data cleaning (duplicate data has to be eliminated)
 
@@ -117,10 +109,7 @@ Data_matrix_mesh = sortrows([round(Data_matrix(:,1)/Voxel_size),round(Data_matri
 
 dim_3D(dim_3D(:,4)>0.95,:) = [];
 dim_3D(dim_3D(:,4)< 0.8,:) = [];
-%% rescaled
-% OriMin = min(Data_matrix_mesh(:,1)); % original min
-% OriMax = max(Data_matrix_mesh(:,1)); % original max
-% Data_matrix_mesh(:,1) = Data_matrix_mesh(:,1) - 50 +1; %- 107 + 1;
+
 % sort the data by height
 Data_matrix_mesh = sortrows(Data_matrix_mesh,3);
 
@@ -135,34 +124,34 @@ TNX = 0;
 TNY = 0;
 TNZ = 0;
 % 
-% for index_CT = 1: size(Data_matrix_mesh,1)
-%     for height = 1:max(dim_3D(:,3))
-%         for row = 1: max(dim_3D(:,2)) % y_dir
-%             for col = 1:max(dim_3D(:,1)) % x_dir
-%                 % searching the the data point around twenty point (large ragne searching)
-%                 if ~(height <= range || row <= range || col <=range) && ~(height >(max(dim_3D(:,3)) - range )|| row >(max(dim_3D(:,2))-range) || (col > max(dim_3D(:,1))-range) )
-%                     if Data_matrix_mesh(index_CT,3) == height
-%                         for index_pre = 1: size(dim_3D,1)
-%                            if dim_3D(index_pre,3) <= (height + range) && dim_3D(index_pre,3) >= (height - range)
-%                                if dim_3D(index_pre,2) <= (row + range) && dim_3D(index_pre,2) >= (row - range)
-%                                    if dim_3D(index_pre,1) <= (col+range) && dim_3D(index_pre,1) >= (col - range)
-%                                        TP = TP+1; %TP
-%                                    else
-%                                        TNX = TNX+1; % TN
-%                                    end
-%                                else
-%                                    TNY = TNY + 1;%TN
-%                                end
-%                            else
-%                                TNZ = TNZ+1; %TN
-%                            end
-%                         end
-%                     end
-%                 end
-%             end
-%         end
-%     end
-% end
+for index_CT = 1: size(Data_matrix_mesh,1)
+     for height = 1:max(dim_3D(:,3))
+         for row = 1: max(dim_3D(:,2)) % y_dir
+             for col = 1:max(dim_3D(:,1)) % x_dir
+                 % searching the the data point around twenty point (large ragne searching)
+                 if ~(height <= range || row <= range || col <=range) && ~(height >(max(dim_3D(:,3)) - range )|| row >(max(dim_3D(:,2))-range) || (col > max(dim_3D(:,1))-range) )
+                     if Data_matrix_mesh(index_CT,3) == height
+                         for index_pre = 1: size(dim_3D,1)
+                            if dim_3D(index_pre,3) <= (height + range) && dim_3D(index_pre,3) >= (height - range)
+                                if dim_3D(index_pre,2) <= (row + range) && dim_3D(index_pre,2) >= (row - range)
+                                    if dim_3D(index_pre,1) <= (col+range) && dim_3D(index_pre,1) >= (col - range)
+                                        TP = TP+1; %TP
+                                    else
+                                        TNX = TNX+1; % TN
+                                    end
+                                else
+                                    TNY = TNY + 1;%TN
+                                end
+                            else
+                                TNZ = TNZ+1; %TN
+                            end
+                         end
+                     end
+                 end
+             end
+         end
+     end
+ end
 
 %% calculate the new pore volume and location
 pre_matrix = zeros(max(dim_3D(:,1)),max(dim_3D(:,2)),max(dim_3D(:,3)));
@@ -173,44 +162,6 @@ k_x = 31; % x-dir
 k_y = 31; % y-dir
 k_z = 27; % z-dir
 
-
-% objec-> kernel -> moving
-% for height = 1:(max(dim_3D(:,3)))
-%     for row = 1:(max(dim_3D(:,2)))
-%         for col = 1:(max(dim_3D(:,1)))
-%             % build the kernel 
-%             % boundary problem (avoid boundary)
-%             if (height > ((k_z-1)/2)) && (height < max(dim_3D(:,3))-((k_z-1)/2)) && (row > ((k_y-1)/2)) && (row < max(dim_3D(:,2))-((k_y-1)/2)) && (col > ((k_x-1)/2)) && (col < max(dim_3D(:,1))-((k_x-1)/2))
-%                 % where is the original pore location, it is a center of
-%                 % kenrnal
-%                 if pre_matrix(col,row,height) ~= 0
-%                    for k = -((k_z-1)/2):((k_z-1)/2)
-%                        for j = -((k_y-1)/2):((k_y-1)/2)
-%                            for i = -((k_x-1)/2):((k_x-1)/2)
-%                                % add the operation
-%                                if ((height+k)==height) && ((row+j) == row) && ((col+i) == col)
-%                                   continue
-%                                else
-%                                    disp(['coorinnate;' num2str(col) ' ' num2str(row) ' ' num2str(height)])
-%                                    disp(['original' num2str( pre_matrix(col,row,height))])
-%                                    disp(['next' num2str(pre_matrix(col+i,row+j,height+k))])
-%                                    pre_matrix(col,row,height) = pre_matrix(col+i,row+j,height+k)+pre_matrix(col,row,height);
-%                                    pre_matrix(col+i,row+j,height+k) = 0; % make the be sum point become a zero
-%                                    disp(['after' num2str(pre_matrix(col,row,height))])
-%                                    disp(['...............'])                    
-%                                 end
-%                             end
-%                         end
-%                     end
-%                 end
-%             else
-%                 % Due to this region was neglect there will be zero and
-%                 % this is boundary
-%                 pre_matrix(col,row,height) = 0;
-%             end
-%         end
-%     end
-% end
 
 
 %% "new"  calculate the new pore volume and location
@@ -236,6 +187,7 @@ for index_dim3D = 1:size(dim_3D_test,1) % searching index of pore data
         end
     end
 end
+% make a table as same as dim_3D x,y,z,value
 new_3D = [];
 index = 1;
 for height = 1: size(pre_matrix,3)
@@ -251,22 +203,6 @@ for height = 1: size(pre_matrix,3)
         end
     end
 end
-% make a table as same as dim_3D x,y,z,value
-% new_3D = [];
-% index = 1;
-% for height = 1: size(pre_matrix,3)
-%     for row = 1:size(pre_matrix,2)
-%         for col = 1:size(pre_matrix,1)
-%             if pre_matrix(col,row,height) ~= 0
-%                 new_3D(index,1) = col;
-%                 new_3D(index,2) = row;
-%                 new_3D(index,3) = height;
-%                 new_3D(index,4) = pre_matrix(col,row,height);
-%                 index = index +1;
-%             end
-%         end
-%     end
-% end
 
 if isempty(new_3D) == 1
     new_3D(1,1) = 0;
@@ -325,22 +261,6 @@ for height = 1: size(pre_matrix,3)
         end
     end
 end
-% make a table as same as dim_3D x,y,z,value
-% new_3D = [];
-% index = 1;
-% for height = 1: size(pre_matrix,3)
-%     for row = 1:size(pre_matrix,2)
-%         for col = 1:size(pre_matrix,1)
-%             if pre_matrix(col,row,height) ~= 0
-%                 new_3D(index,1) = col;
-%                 new_3D(index,2) = row;
-%                 new_3D(index,3) = height;
-%                 new_3D(index,4) = pre_matrix(col,row,height);
-%                 index = index +1;
-%             end
-%         end
-%     end
-% end
 
 if isempty(new_3D) == 1
     new_3D(1,1) = 0;
