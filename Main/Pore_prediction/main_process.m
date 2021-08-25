@@ -6,10 +6,6 @@
 clc,clear
 close all
 
-% files = {'Normal1.mat','Normal2.mat','Normal3.mat',...
-%         'Normal4.mat','Normal5.mat','Normal6.mat','Normal7.mat',...
-%         'Abnormal1.mat','Abnormal2.mat','Abnormal3.mat',...
-%         'Abnormal4.mat','Abnormal5.mat','Abnormal6.mat'};
 
 n = 1 ;
 name = {};
@@ -47,6 +43,8 @@ for i = 1:numel(files)
     ratio(1,1:size([Data.DataBase(1:end)],2))= [Data.DataBase(1:end).Ratio];
     angle(1,1:size([Data.DataBase(1:end)],2))= [Data.DataBase(1:end).Angle];
     nos(1,1:size([Data.DataBase(1:end)],2))= [Data.DataBase(1:end).NOS];
+    
+   % extract the data from DataBase and turn into a one dimensional array
    n=1;
    for k = 1:size(leng,1)
        for j = 1:size(leng,2)
