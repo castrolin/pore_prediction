@@ -21,7 +21,7 @@ pl = el/(x7-x1);
 % path = dir(fullfile(folder,'1.avi'));
 
 %---------------the main origin file work path-----------------------------------------
-
+% fill the folder address in here which were save video file
 %folder = 'F:\Matlab_analysis_data\0510_avi';
 folder = 'E:\0715exp_avi';
 path = dir(fullfile(folder,'*.avi'));
@@ -93,6 +93,8 @@ for k = 1:nFrames
        n = n+1;
    end
 end
+% create the database and it saved the raw image, melt pool length, melt pool width, melt pool ratio,
+% spatter angle and number of spatter(NOS)
 if video == 1
     shape(1:n) = ...
         struct('Image',zeros(TransHeight,TransWidth,'uint8'),...
@@ -111,6 +113,7 @@ else
 end
 
 n = 1;
+%% delete the black image based on the sum of intensity
 for k = 1:nFrames
    if sum(sum(double(mov(k).cdata)))>10000
        shape(n).Image = mov(k).cdata;
@@ -119,7 +122,6 @@ for k = 1:nFrames
        
 end
 
-%% The database is shape struct now!!!
 % analysis each image from "shape"
 
 for each = 1: size(shape,2)
@@ -135,11 +137,7 @@ for each = 1: size(shape,2)
     end
     
     TransfImage = TransImage(Iold,x1,y1,x3,y3,x7,y7,x9,y9);
-%rotate and resize
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Tr = imrotate(TransfImage,angle);
-    %Tr = imresize(Tr,[128,256]);
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     Tr = TransfImage;
     
     Binary_Iold = Iold;
@@ -220,8 +218,7 @@ for each = 1: size(shape,2)
 %              No_spatter = nn;
 %          end
       end
-      % Calculate spatter angle
-      
+      % Calculate spatter angle base upon the arctan function
       q =1;
       for Number = 1 : size(sort_Area,2) % Number is spatter number
           if Number ~= No_meltpool
