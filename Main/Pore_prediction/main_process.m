@@ -13,7 +13,7 @@ close all
 
 n = 1 ;
 name = {};
-for datanum = 1:100
+for datanum = 1:100 % video name of file
     files{n} = strcat(sprintf('%1.f',datanum),'.mat');
     n = n+1;
 end
