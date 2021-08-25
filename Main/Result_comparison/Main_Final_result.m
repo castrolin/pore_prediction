@@ -15,28 +15,31 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc,clear
 close all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%CT part%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% read the file
-x = xlsread('X:\Castro\recon_pore\excel\Pore_fist_July15.xlsx');
+x = xlsread('X:\Castro\recon_pore\excel\Pore_fist_July15.xlsx'); % import CT result(excel file) here
 %% Parameter setup
 Voxel_size = 18.604;
 meshsize = 0.018604; % 20um 0.02 mm
-% object_dimension (micrometer)
+% object_dimension (micrometer) As built dimension
 Height = 2000;
 Width  = 3000;
 Long = 4000;
 VolumeObject = Height * Width * Long;
-%% creat the data matrix
+
+%% create the data matrix
 diameter = x(:,3);
 voxel = x(:,8);
 volume = x(:,7);
 
-%% the coordinate  (different sample has differnet cooridnate !!)
+%% the coordinate (the excel file -> the title_name: centerx y,z)
+% note:The coordinate sytem is different between CT and prediction
 y_dir = x(:,6); % soft -> software
 z_dir = x(:,4);
 x_dir = x(:,5);
 
-% Data_matrix = [round(x_dir/meshsize),round(y_dir/meshsize),round(z_dir/meshsize),voxel,diameter];z->x, y->z, x->y
 Data_matrix = [x_dir,y_dir,z_dir,voxel, diameter,volume];
+
 %% Data_pre-processing (shift the coordinate)
 min_dir = [];
 for index = 1:3
@@ -74,6 +77,8 @@ for index = 1:3
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% dimenstionto mesh 
+Data_matrix_mesh = sortrows([round(Data_matrix(:,1)/Voxel_size),round(Data_matrix(:,2)/Voxel_size),round(Data_matrix(:,3)/35)+1,Data_matrix(:,5)],3);
 %% create the empty mesh cubic based on the coridnate
 %% Visualization
 figure,scatter3(Data_matrix(:,1),Data_matrix(:,2),Data_matrix(:,3),40,Data_matrix(:,5),'filled');
@@ -91,38 +96,33 @@ set(gca,'Fontsize',20)
 Relative_matrix = ((VolumeObject - sum(Data_matrix(:,6)))/VolumeObject)*100;
 
 
-%% confusion result and model accuracy
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Prediction part%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% confusion result and model accuracy
 %load the prdiction model result
 load('X:\Castro\recon_pore\matfile\July15result.mat'); % < - dim_3D is mat file
 
 %% data cleaning (duplicate data has to be eliminated)
-
 dim_3D = sortrows(unique(dim_3D(:,:),'rows'),3);
 
-%% dimenstionto mesh 
-Data_matrix_mesh = sortrows([round(Data_matrix(:,1)/Voxel_size),round(Data_matrix(:,2)/Voxel_size),round(Data_matrix(:,3)/35)+1,Data_matrix(:,5)],3);
 % change the scale of the datapoint data reconstruction
-%% data cleaning
-%Data_matrix_mesh(Data_matrix_mesh(:,1)<50,:) = []; % based on the x-dirction fit the scale of prediction 107
-%Data_matrix_mesh(Data_matrix_mesh(:,1)>300,:) = []; % based on the y-dirction fit the scale of prediction 296 (coordinate)
-
+%% data cleaning (based on the coorelation cofficient {0.8~0.95} in order to preserve the data and eliminate )
 dim_3D(dim_3D(:,4)>0.95,:) = [];
 dim_3D(dim_3D(:,4)< 0.8,:) = [];
 
 % sort the data by height
 Data_matrix_mesh = sortrows(Data_matrix_mesh,3);
 
-
 %% Confusion matrix and Final result
-% the scale i s wrong
+%%%%%%%%%%%%%%%%%%%%%%%%%%%Confusion Matrix%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% the idea of confusion matrix is padding and the confusion matrix has to be improved
 
 range = 10; %The Padd_path
 % 
-TP = 0;
-TNX = 0;
-TNY = 0;
-TNZ = 0;
+TP = 0; % True positive in any direction
+TNX = 0;% True negative in x direction
+TNY = 0;% True negative in y direction
+TNZ = 0;% True negative in z direction
 % 
 for index_CT = 1: size(Data_matrix_mesh,1)
      for height = 1:max(dim_3D(:,3))
@@ -152,17 +152,24 @@ for index_CT = 1: size(Data_matrix_mesh,1)
          end
      end
  end
-
+ 
+%% due to the result has repeated so that it has to be divide  by the cycle number
+% The cycle number is size of Data_matrix_mesh
+TP = round(TP/size(Data_matrix_mesh,1));
+TN = round((TNX+TNY+TNY)/size(Data_matrix_mesh,1));
+FN = range*range*range-(range*3);
+FP = range*range*range;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% calculate the new pore volume and location
 pre_matrix = zeros(max(dim_3D(:,1)),max(dim_3D(:,2)),max(dim_3D(:,3)));
 dim_3D_test = dim_3D;
+%%%%%%%%%%%%%%%%%%%% Using padding matrix re-arange the pore data location %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% Still testing  %%%%The new_3D matrix has to be exsitence%%%%%%%%%%%
 
 % kernel size
 k_x = 31; % x-dir
 k_y = 31; % y-dir
 k_z = 27; % z-dir
-
-
 
 %% "new"  calculate the new pore volume and location
 
@@ -187,6 +194,7 @@ for index_dim3D = 1:size(dim_3D_test,1) % searching index of pore data
         end
     end
 end
+
 % make a table as same as dim_3D x,y,z,value
 new_3D = [];
 index = 1;
@@ -277,7 +285,8 @@ zlabel('Layer')
 colorbar('East')
 zlim([0,120])
 set(gca,'Fontsize',20)
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot the original prediction result in 3D 
 figure, scatter3(dim_3D(:,1),dim_3D(:,2),dim_3D(:,3),40,dim_3D(:,4),'filled')
 title('dim_3D')
 xlabel('X-axis(\mum)')
@@ -286,27 +295,13 @@ zlabel('Layer')
 colorbar('East')
 zlim([0,120])
 set(gca,'Fontsize',20)
-%% due to the result has repeated so that it has to be divide  by the cycle number
-% The cycle number is size of Data_matrix_mesh
-TP = round(TP/size(Data_matrix_mesh,1));
-TN = round((TNX+TNY+TNY)/size(Data_matrix_mesh,1));
-FN = range*range*range-(range*3);
-FP = range*range*range;
+
 %% the pore size of prediction and the pore size of CT (Ratio)
-% in order to have same scale bar!
-a = max(Data_matrix_mesh(:,4));
-b = min(Data_matrix_mesh(:,4));
-c = max(new_3D(:,4));
-d = min(new_3D(:,4));
-% In the same scale
-Nominal_new_3D = (new_3D(:,4)-d)/(c-d);
+%% The Tunning part %%
 new_3D_scale = [];
-% for lengthofNominal_new_3D = 1:size(Nominal_new_3D,1)
-%     new_3D_scale(lengthofNominal_new_3D,1) = Nominal_new_3D(lengthofNominal_new_3D,1) *(a-b)+b;
-% end
 new_3D_scale = new_3D(:,4)*80;
-% new_3D_scale = (Nominal_new_3D .* (a-b))+b;
-% new_3D_scale = Nominal_new_3D;
+
+
 %% Plot the X-ray and prediction model 
 % change the x,y,z label to the same scale (x,y) in micrometer z in layer
 Voxel_size = 15.245;
