@@ -29,23 +29,6 @@ ncount = 1;
 Numdata = 1;
 
 
-
-%%%%%%%%%%%%%%Testing code region%%%%%%%%%
-% video = 58
-% name = [];
-%     n = 1;
-%     for num = 1: size(path(video).name,2)
-%         if isnan(str2double(path(video).name(num))) == 0
-%             name(n) = str2double(path(video).name(num));
-%             n = n+1;
-%         else
-%             break;
-%         end
-%     end
-%     name = sprintf('%1.f',name);
-%     Inputname = strcat(name,'.mat');
-%%%%%%%%%%%%%%%%%%%%%%%
-
 for video = 1:numel(path)
 
 filename = fullfile(path(video).folder,path(video).name)
@@ -56,17 +39,6 @@ if ~isfile(filename)
 %obj = VideoReader('H:\Castro\B_para\AVI_B\B1.avi');
 else
 obj = VideoReader(filename);
-% if mod(ncount,5)==1
-%     angle = 90;
-% elseif mod(ncount,5)==2
-%     angle = 135;
-% elseif mod(ncount,5)==3
-%     angle = 180;
-% elseif mod(ncount,5)== 4
-%     angle = 225;
-% elseif mod(ncount,5) == 0
-%     angle = 270;
-% end
 
 nFrames = obj.numberOfFrames;
 vidHeight = obj.Height;
@@ -232,12 +204,6 @@ for each = 1: size(shape,2)
       theta = mean(theta_matrix);
       theta_std = std(theta_matrix);
       
-%       if isnan(theta) == 1
-%           theta = 90;
-%           theta_std = 0;
-%       else
-%         theta_std = std(theta_matrix);
-%       end
       
   else
       theta = 0;
@@ -259,8 +225,7 @@ for each = 1: size(shape,2)
     clear Binary_Iold
     clear T
     
-    %%spatter segamentation?????
-    %%U-net model or interpolation???
+
     Numdata = Numdata+1;
 end
     name = [];
@@ -276,22 +241,10 @@ end
     % the amount of data name
     name = sprintf('%1.f',name);
     InputName = strcat(name,'.mat');
-    
-    
-    %% testing file name
-    %InputName = sprintf('test%d.mat',video);
-    %InputName = name
-%     InputName ='testing_4.mat';
-    
-    
-    
+
     save(InputName,'DataBase')
     close all
     clear shape
     ncount=ncount+1;
 end
 end
-% Avg_Length = mean([DataBase(1:end).Length])
-% Avg_Width = mean([DataBase(1:end).Width])
-% STD_Length = std([DataBase(1:end).Length])
-% STD_Width = std([DataBase(1:end).Width])
