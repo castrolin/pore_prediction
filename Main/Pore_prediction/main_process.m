@@ -21,7 +21,7 @@ NOC_excel = xlsread("Number_of_cluster_0715.xlsx"); % NOC = Number Of Cluster
 % 7X7
 %% testing the optimize cluster in code
 %data = load(files{1});
- % record the all of the centorid(Number of data,Number of cluster,Number of feature)
+% record the all of the centorid(Number of data,Number of cluster,Number of feature)
 Layer = 1;
 for i = 1:numel(files)
     worksheetName = sprintf('Test%d.xlsx',i) ;
@@ -30,7 +30,6 @@ for i = 1:numel(files)
     Data = load(files{i});
     data_set = [[Data.DataBase.Length];[Data.DataBase.Width];[Data.DataBase.Ratio];[Data.DataBase.Angle];[Data.DataBase.NOS]]';
     
-    %[IDX,C,SUMD,K]=best_kmeans(data_set);
     K = NOC_excel(i,2);
     % if cluseter number is equal to one (the correlation will failed)
     if K == 1
